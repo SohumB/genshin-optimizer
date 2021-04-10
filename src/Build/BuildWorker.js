@@ -6,7 +6,7 @@ import { GetDependencies } from '../StatDependency';
 
 onmessage = async (e) => {
   const t1 = performance.now()
-  const { splitArtifacts, setFilters, minFilters = {}, maxFilters = {}, initialStats: stats, artifactSetEffects, maxBuildsToShow, optimizationTarget, ascending, turbo = true } = e.data;
+  const { splitArtifacts, setFilters, minFilters = {}, maxFilters = {}, initialStats: stats, artifactSetEffects, maxBuildsToShow, optimizationTarget, ascending, turbo = false } = e.data;
 
   let target, targetKeys;
   if (typeof optimizationTarget === "string") {
