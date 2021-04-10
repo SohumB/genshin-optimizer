@@ -6,7 +6,7 @@ import { GetDependencies } from '../StatDependency';
 
 onmessage = async (e) => {
   const t1 = performance.now()
-  const { splitArtifacts, setFilters, minFilters = {}, maxFilters = {}, initialStats: stats, artifactSetEffects, maxBuildsToShow, optimizationTarget, ascending, turbo = false } = e.data;
+  const { splitArtifacts, setFilters, minFilters = {}, maxFilters = {}, initialStats: stats, artifactSetEffects, maxBuildsToShow, optimizationTarget, ascending, turbo = true } = e.data;
 
   let target, targetKeys;
   if (typeof optimizationTarget === "string") {
@@ -82,6 +82,12 @@ onmessage = async (e) => {
     artifactPermutations(initialStats, artifactsBySlot, artifactSetEffects, callback)
 
   gc()
+
+  // We present ONLY the top build on turbo. Many assumptions
+  // break when we need to consider #2 and beyond.
+  if (turbo) {
+    builds = [builds[0]];
+  }
 
   let t2 = performance.now()
   postMessage({ progress: buildCount, timing: t2 - t1, skipped })
