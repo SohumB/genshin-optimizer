@@ -6,7 +6,7 @@ import { GetDependencies } from '../StatDependency';
 
 onmessage = async (e) => {
   const t1 = performance.now()
-  const { splitArtifacts, setFilters, minFilters = {}, maxFilters = {}, initialStats: stats, artifactSetEffects, maxBuildsToShow, optimizationTarget, ascending } = e.data;
+  const { splitArtifacts, setFilters, minFilters = {}, maxFilters = {}, initialStats: stats, artifactSetEffects, maxBuildsToShow, optimizationTarget, ascending, turbo = false } = e.data;
 
   let target, targetKeys;
   if (typeof optimizationTarget === "string") {
@@ -33,25 +33,25 @@ onmessage = async (e) => {
   const oldCount = calculateTotalBuildNumber(splitArtifacts, setFilters)
 
   let prunedArtifacts = splitArtifacts, newCount = oldCount
-  if (Object.keys(ascending ? minFilters : maxFilters).length === 0) {
-    const prune = (alwaysAccepted) => Object.fromEntries(Object.entries(splitArtifacts).map(([key, values]) =>
-      [key, pruneArtifacts(values, artifactSetEffects, new Set(dependencies), ascending, new Set(alwaysAccepted))]))
+  if (turbo) {
+    // Prune artifact with strictly inferior (relevant) stats.
+    if (Object.keys(ascending ? minFilters : maxFilters).length === 0) {
+      const prune = (alwaysAccepted) => Object.fromEntries(Object.entries(splitArtifacts).map(([key, values]) =>
+        [key, pruneArtifacts(values, artifactSetEffects, new Set(dependencies), ascending, new Set(alwaysAccepted))]))
 
-    prunedArtifacts = prune([])
-    newCount = calculateTotalBuildNumber(prunedArtifacts, setFilters)
-    console.log("N1", newCount)
-
-    if (newCount < maxBuildsToShow) {
-      // over-pruned, try not to prune the set-filter
-      prunedArtifacts = prune(setFilters.map(set => set.key))
+      prunedArtifacts = prune([])
       newCount = calculateTotalBuildNumber(prunedArtifacts, setFilters)
-      console.log("N2", newCount)
-    }
-    if (newCount < maxBuildsToShow) {
-      // still not enough... let's just not prune it
-      prunedArtifacts = splitArtifacts
-      newCount = oldCount
-      console.log("N3", newCount)
+
+      if (newCount < maxBuildsToShow) {
+        // over-pruned, try not to prune the set-filter
+        prunedArtifacts = prune(setFilters.map(set => set.key))
+        newCount = calculateTotalBuildNumber(prunedArtifacts, setFilters)
+      }
+      if (newCount < maxBuildsToShow) {
+        // still not enough... let's just not prune it
+        prunedArtifacts = splitArtifacts
+        newCount = oldCount
+      }
     }
   }
 
