@@ -34,28 +34,27 @@ const char = {
     auto: {
       name: "Ceremonial Bladework",
       img: normal,
-      infusable: false,
       document: [{
         text: <span><strong>Normal Attack</strong> Perform up to 5 rapid strikes.</span>,
         fields: data.normal.hitArr.map((percentArr, i) =>
         ({
           text: `${i + 1}-Hit DMG`,
-          formulaText: (tlvl, stats) => <span>{percentArr[tlvl]}% {Stat.printStat(getTalentStatKey("normal", stats), stats)}</span>,
+          formulaText: stats => <span>{percentArr[stats.tlvl.auto]}% {Stat.printStat(getTalentStatKey("normal", stats), stats)}</span>,
           formula: formula.normal[i],
-          variant: (tlvl, stats) => getTalentStatKeyVariant("normal", stats),
+          variant: stats => getTalentStatKeyVariant("normal", stats),
         }))
       }, {
         text: <span><strong>Charged Attack</strong> Consumes a certain amount of Stamina to unleash 2 rapid sword strikes.</span>,
         fields: [{
           text: `Charged 1-Hit DMG`,
-          formulaText: (tlvl, stats) => <span>{data.charged.atk1[tlvl]}% {Stat.printStat(getTalentStatKey("charged", stats), stats)}</span>,
+          formulaText: stats => <span>{data.charged.atk1[stats.tlvl.auto]}% {Stat.printStat(getTalentStatKey("charged", stats), stats)}</span>,
           formula: formula.charged.atk1,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("charged", stats),
+          variant: stats => getTalentStatKeyVariant("charged", stats),
         }, {
           text: `Charged 2-Hit DMG`,
-          formulaText: (tlvl, stats) => <span>{data.charged.atk2[tlvl]}% {Stat.printStat(getTalentStatKey("charged", stats), stats)}</span>,
+          formulaText: stats => <span>{data.charged.atk2[stats.tlvl.auto]}% {Stat.printStat(getTalentStatKey("charged", stats), stats)}</span>,
           formula: formula.charged.atk2,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("charged", stats),
+          variant: stats => getTalentStatKeyVariant("charged", stats),
         }, {
           text: `Stamina Cost`,
           value: `20`,
@@ -64,19 +63,19 @@ const char = {
         text: <span><strong>Plunging Attack</strong> Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.</span>,
         fields: [{
           text: `Plunge DMG`,
-          formulaText: (tlvl, stats) => <span>{data.plunging.dmg[tlvl]}% {Stat.printStat(getTalentStatKey("plunging", stats), stats)}</span>,
+          formulaText: stats => <span>{data.plunging.dmg[stats.tlvl.auto]}% {Stat.printStat(getTalentStatKey("plunging", stats), stats)}</span>,
           formula: formula.plunging.dmg,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("plunging", stats),
+          variant: stats => getTalentStatKeyVariant("plunging", stats),
         }, {
           text: `Low Plunge DMG`,
-          formulaText: (tlvl, stats) => <span>{data.plunging.low[tlvl]}% {Stat.printStat(getTalentStatKey("plunging", stats), stats)}</span>,
+          formulaText: stats => <span>{data.plunging.low[stats.tlvl.auto]}% {Stat.printStat(getTalentStatKey("plunging", stats), stats)}</span>,
           formula: formula.plunging.low,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("plunging", stats),
+          variant: stats => getTalentStatKeyVariant("plunging", stats),
         }, {
           text: `High Plunge DMG`,
-          formulaText: (tlvl, stats) => <span>{data.plunging.high[tlvl]}% {Stat.printStat(getTalentStatKey("plunging", stats), stats)}</span>,
+          formulaText: stats => <span>{data.plunging.high[stats.tlvl.auto]}% {Stat.printStat(getTalentStatKey("plunging", stats), stats)}</span>,
           formula: formula.plunging.high,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("plunging", stats),
+          variant: stats => getTalentStatKeyVariant("plunging", stats),
         }]
       },],
     },
@@ -87,9 +86,9 @@ const char = {
         text: <span>Unleashes a frigid blast, dealing <span className="text-cryo">Cryo DMG</span> to opponents in front of Kaeya.</span>,
         fields: [{
           text: "Skill DMG",
-          formulaText: (tlvl, stats) => <span>{data.skill.dmg[tlvl]}% {Stat.printStat(getTalentStatKey("skill", stats) + "_multi", stats)}</span>,
-          formula: formula.skill.skill_dmg,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("skill", stats),
+          formulaText: stats => <span>{data.skill.dmg[stats.tlvl.skill]}% {Stat.printStat(getTalentStatKey("skill", stats) + "_multi", stats)}</span>,
+          formula: formula.skill.dmg,
+          variant: stats => getTalentStatKeyVariant("skill", stats),
         }, {
           text: "CD",
           value: "6s",
@@ -103,9 +102,9 @@ const char = {
         text: <span>Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him. These icicles will follow the character around and deal <span className="text-cryo">Cryo DMG</span> to opponents in their path for the ability's duration.</span>,
         fields: [{
           text: "Icicles DMG",
-          formulaText: (tlvl, stats) => <span>{data.burst.dmg[tlvl]}% {Stat.printStat(getTalentStatKey("burst", stats), stats)}</span>,
-          formula: formula.burst.burst_dmg,
-          variant: (tlvl, stats) => getTalentStatKeyVariant("burst", stats),
+          formulaText: stats => <span>{data.burst.dmg[stats.tlvl.burst]}% {Stat.printStat(getTalentStatKey("burst", stats), stats)}</span>,
+          formula: formula.burst.dmg,
+          variant: stats => getTalentStatKeyVariant("burst", stats),
         }, {
           text: "Duration",
           value: "8s",
@@ -115,6 +114,8 @@ const char = {
         }, {
           text: "Energy Cost",
           value: 60,
+        }, stats => stats.constellation >= 2 && {
+          text: "Increase duration by 2.5s per opponent defeated during, up to 15s"
         }],
       }],
     },
@@ -122,17 +123,20 @@ const char = {
       name: "Cold-Blooded Strike",
       img: passive1,
       document: [{
-        text: (tlvl, stats) => <span>
-          Every hit with <b>Frostgnaw</b> regenerates HP for Kaeya equal to 15% of his ATK.{DisplayPercent(15, stats, "finalATK")}</span>
+        text: stats => <span>Every hit with <b>Frostgnaw</b> regenerates HP for Kaeya equal to 15% of his ATK.{DisplayPercent(15, stats, "finalATK")}</span>,
+        fields: [{
+          text: "Healing",
+          formulaText: stats => <span>15% {Stat.printStat("finalATK", stats)} * {Stat.printStat("heal_multi", stats)}</span>,
+          formula: formula.passive1.heal,
+          variant: "success",
+        }],
       }],
     },
     passive2: {
       name: "Glacial Heart",
       img: passive2,
       document: [{
-        text: <span>
-          Opponents Frozen by <b>Frostgnaw</b> will drop additional Elemental Particles. <b>Frostgnaw</b> may only produce a maximum of 2 additional Elemental Particles per use.
-        </span>
+        text: <span>Opponents Frozen by <b>Frostgnaw</b> will drop additional Elemental Particles. <b>Frostgnaw</b> may only produce a maximum of 2 additional Elemental Particles per use.</span>,
       }],
     },
     passive3: {
@@ -145,7 +149,20 @@ const char = {
     constellation1: {
       name: "Excellent Blood",
       img: c1,
-      document: [{ text: <span>The CRIT Rate of Kaeya's <b>Normal</b> and <b>Charged Attacks</b> against opponents affected by <span className="text-cryo">Cryo</span> is increased by 15%.</span> }]
+      document: [{
+        text: <span>The CRIT Rate of Kaeya's <b>Normal</b> and <b>Charged Attacks</b> against opponents affected by <span className="text-cryo">Cryo</span> is increased by 15%.</span>,
+        conditional: stats => stats.constellation >= 1 && {
+          type: "character",
+          conditionalKey: "ColdBloodedStrike",
+          condition: <span>Opponent affected by <span className="text-cryo">Cryo</span></span>,
+          sourceKey: "kaeya",
+          maxStack: 1,
+          stats: {
+            normal_critRate_: 15,
+            charged_critRate_: 15
+          }
+        }
+      }]
     },
     constellation2: {
       name: "Never-Ending Performance",
@@ -161,7 +178,7 @@ const char = {
     constellation4: {
       name: "Frozen Kiss",
       img: c4,
-      document: [{ text: (tlvl, stats) => <span>Triggers automatically when Kaeya's HP falls below 20%: Creates a shield that absorbs damage equal to 30% of Kaeya's Max HP{DisplayPercent(30, stats, "finalHP")}. Lasts for 20s. This shield absorbs <span className="text-cryo">Cryo DMG</span> with 250% efficiency. Can only occur once every 60s.</span> }]
+      document: [{ text: stats => <span>Triggers automatically when Kaeya's HP falls below 20%: Creates a shield that absorbs damage equal to 30% of Kaeya's Max HP{DisplayPercent(30, stats, "finalHP")}. Lasts for 20s. This shield absorbs <span className="text-cryo">Cryo DMG</span> with 250% efficiency. Can only occur once every 60s.</span> }]
     },
     constellation5: {
       name: "Frostbiting Embrace",
